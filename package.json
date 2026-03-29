@@ -5,5 +5,8 @@
     "start": "node backend/server.js",
     "install-backend": "cd backend && npm install",
     "install-frontend": "cd frontend && npm install"
+  },
+  "engines": {
+    "node": ">=22.12.0"
   }
 }
