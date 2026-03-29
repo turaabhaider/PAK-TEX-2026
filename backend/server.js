@@ -8,57 +8,62 @@ const checkAuth = require('./middleware/auth');
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// 1. Updated Middleware to allow your Railway Frontend
+app.use(cors({
+    origin: '*', // For development. Later, replace with your actual Frontend Railway URL
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // --- PUBLIC ROUTES ---
 
-// 1. Get Products for the Home Page
+// 2. Updated to match the "products" table you just created
 app.get('/api/products', async (req, res) => {
     try {
         const [products] = await db.execute('SELECT * FROM products');
         res.json(products);
     } catch (err) {
         console.error("Database Error (Products):", err.message);
-        res.status(500).json({ error: "Database error" });
+        res.status(500).json({ error: "Database error", details: err.message });
     }
 });
 
-// 2. Post New Order from Checkout
-// Added a wrapper to catch hidden controller errors
-app.post('/api/orders', async (req, res, next) => {
-    console.log("Incoming Order Data:", req.body); // Log data to verify it's arriving
+// 3. Post New Order 
+app.post('/api/orders', async (req, res) => {
+    console.log("Incoming Order Data:", req.body); 
     try {
+        // Ensure your createOrder controller uses: full_name, email, phone, address
         await createOrder(req, res);
     } catch (err) {
-        console.error("CRITICAL ERROR IN createOrder CONTROLLER:", err.message);
+        console.error("CRITICAL ERROR IN createOrder:", err.message);
         res.status(500).json({ error: "Order processing failed", details: err.message });
     }
 });
 
-// 3. Admin Login (Generates JWT)
 app.post('/api/admin/login', adminLogin);
 
-
 // --- PROTECTED ADMIN ROUTES ---
+// 4. Updated column names to match your new "orders" table
 app.get('/api/admin/orders', checkAuth, async (req, res) => {
     try {
         const [rows] = await db.execute(`
             SELECT 
                 o.id, 
-                o.customer_name, 
+                o.full_name, 
                 o.email, 
                 o.phone, 
                 o.address, 
-                o.total, 
+                o.total_amount, 
                 o.created_at,
+                o.status,
                 JSON_ARRAYAGG(
                     JSON_OBJECT(
-                        'name', oi.hoodie_name, 
-                        'size', oi.size, 
-                        'color', oi.color, 
-                        'qty', oi.quantity
+                        'id', oi.id,
+                        'product_id', oi.product_id, 
+                        'qty', oi.quantity,
+                        'price', oi.price
                     )
                 ) as items
             FROM orders o
@@ -69,12 +74,11 @@ app.get('/api/admin/orders', checkAuth, async (req, res) => {
         res.json(rows);
     } catch (err) {
         console.error("Admin Orders Error:", err.message);
-        res.status(500).json({ error: "Unauthorized or Database Error" });
+        res.status(500).json({ error: "Database Error", details: err.message });
     }
 });
 
 const PORT = process.env.PORT || 5000;
-// Use 0.0.0.0 to ensure Railway can route traffic to the container
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 SERVER RUNNING ON PORT ${PORT}`);
 });
