@@ -5,10 +5,13 @@ export default function AllHoodies() {
     const [products, setProducts] = useState([]);
     const { addToCart } = useContext(CartContext);
 
+    // Dynamic URL: Uses Railway variable if it exists, otherwise localhost for dev
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/products');
+                const res = await fetch(`${API_URL}/api/products`);
                 const data = await res.json();
                 setProducts(data);
             } catch (err) {
@@ -16,7 +19,7 @@ export default function AllHoodies() {
             }
         };
         fetchProducts();
-    }, []);
+    }, [API_URL]);
 
     return (
         <div style={{ backgroundColor: '#000', color: '#fff', minHeight: '100vh', padding: '100px 50px' }}>

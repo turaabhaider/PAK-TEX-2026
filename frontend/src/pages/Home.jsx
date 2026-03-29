@@ -5,10 +5,13 @@ export default function Home() {
     const [products, setProducts] = useState([]);
     const { addToCart } = useContext(CartContext);
 
+    // Dynamic URL: Uses Railway variable if it exists, otherwise localhost for dev
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const res = await fetch('http://localhost:5000/api/products');
+                const res = await fetch(`${API_URL}/api/products`);
                 const data = await res.json();
                 setProducts(data);
             } catch (err) {
@@ -16,11 +19,10 @@ export default function Home() {
             }
         };
         fetchProducts();
-    }, []);
+    }, [API_URL]);
 
     return (
         <div className="home-container" style={{ backgroundColor: '#000', color: '#fff' }}>
-            {/* HERO SECTION WITH RESTORED TEXT AND BUTTON */}
             <section className="hero" style={{ 
                 height: '100vh', 
                 display: 'flex', 
@@ -32,15 +34,12 @@ export default function Home() {
                 <p style={{ letterSpacing: '5px', fontSize: '0.7rem', marginBottom: '10px', color: '#888' }}>
                     NEW SEASON // 2026
                 </p>
-                
                 <h1 style={{ letterSpacing: '15px', fontSize: '5rem', margin: '0', fontWeight: '800' }}>
                     PAK-TEX
                 </h1>
-
                 <p style={{ letterSpacing: '3px', fontSize: '0.75rem', marginTop: '20px', marginBottom: '40px', maxWidth: '400px', lineHeight: '1.6', color: '#888' }}>
                     PREMIUM STREETWEAR ENGINEERED FOR THE MODERN ICON.
                 </p>
-
                 <button 
                     onClick={() => document.getElementById('shop')?.scrollIntoView({ behavior: 'smooth' })}
                     style={{ 
@@ -59,7 +58,6 @@ export default function Home() {
                 </button>
             </section>
 
-            {/* SHOP SECTION */}
             <section id="shop" className="shop-section" style={{ padding: '80px 50px' }}>
                 <h2 style={{ textAlign: 'center', marginBottom: '60px', letterSpacing: '8px', fontSize: '1.2rem' }}>
                     SHOP ALL HOODIES
