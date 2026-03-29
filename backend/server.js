@@ -8,10 +8,10 @@ const checkAuth = require('./middleware/auth');
 
 const app = express();
 
-// 1. Updated Middleware to allow your specific Railway Frontend URL
+// 1. Updated CORS to explicitly allow your live Railway Frontend domain
 app.use(cors({
     origin: [
-        'https://cooperative-harmony-production-333d.up.railway.app', // Your actual Frontend URL
+        'https://cooperative-harmony-production-333d.up.railway.app', // Your live URL from console
         'http://localhost:5173' // For local development
     ],
     methods: ['GET', 'POST'],
