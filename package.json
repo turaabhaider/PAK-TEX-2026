@@ -1,0 +1,9 @@
+{
+  "name": "pak-tex-root",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "node backend/server.js",
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install"
+  }
+}
