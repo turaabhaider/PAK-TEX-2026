@@ -6,7 +6,7 @@ export default function Home() {
     const { addToCart } = useContext(CartContext);
 
     // Dynamic URL: Uses Railway variable if it exists, otherwise localhost for dev
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const API_URL = 'https://pak-tex-2026-production-1907.up.railway.app';
 
     useEffect(() => {
         const fetchProducts = async () => {
