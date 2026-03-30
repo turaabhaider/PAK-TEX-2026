@@ -23,21 +23,22 @@ exports.createOrder = async (req, res) => {
 
         // 2. Insert into 'orders' table
         // We fill EVERYTHING: customer_name, total, total_amount, and status
-        const [orderResult] = await connection.execute(
-            `INSERT INTO orders 
-            (customer_name, email, phone, address, total, total_amount, Accommodation, status) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-                finalName, 
-                email, 
-                phone, 
-                address, 
-                total || 0,         
-                total || 0, // Ensure total_amount is filled
-                Accommodation || 'None', 
-                'Pending'
-            ]
-        );
+       // Ensure both total AND total_amount are included in the query
+const [orderResult] = await connection.execute(
+    `INSERT INTO orders 
+    (customer_name, email, phone, address, total, total_amount, Accommodation, status) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+        customer_name, 
+        email, 
+        phone, 
+        address, 
+        total,         // Value 1
+        total,         // Value 2 (This fills total_amount so it's not empty)
+        Accommodation || 'None', 
+        'Pending'
+    ]
+);
         
         const orderId = orderResult.insertId;
 
