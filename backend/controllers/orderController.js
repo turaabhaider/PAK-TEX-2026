@@ -1,8 +1,8 @@
 const db = require('../config/db');
 
 exports.createOrder = async (req, res) => {
-    // 1. Destructure the data coming from your Shipping.jsx
-    const { name, email, phone, address, total, items, Accommodation } = req.body;
+    // 1. UPDATED: Destructure using 'customer_name' to match your Shipping.jsx and SQL query
+    const { customer_name, email, phone, address, total, items, Accommodation } = req.body;
     
     // Safety check for DB connection
     if (!db.getConnection) {
@@ -15,11 +15,24 @@ exports.createOrder = async (req, res) => {
         await connection.beginTransaction();
 
         // 2. Insert into 'orders' table
-        // We ensure all columns (customer_name, email, phone, address, total, Accommodation) are included
-        const [orderResult] = await connection.execute(
-            'INSERT INTO orders (customer_name, email, phone, address, total, Accommodation) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, email, phone, address, total, Accommodation || 'None']
-        );
+        // We use 'customer_name' here which is now defined above
+       // ... inside your createOrder function ...
+
+const [orderResult] = await connection.execute(
+    `INSERT INTO orders 
+    (customer_name, email, phone, address, total, total_amount, Accommodation, status) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    [
+        customer_name, 
+        email, 
+        phone, 
+        address, 
+        total,         // Fills the 'total' column
+        total,         // Fills the 'total_amount' column
+        Accommodation || 'None', 
+        'Pending'      // Fills the 'status' column
+    ]
+);
         
         const orderId = orderResult.insertId;
 
