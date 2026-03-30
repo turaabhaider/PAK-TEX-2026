@@ -3,7 +3,7 @@ import { CartContext } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Shipping() {
-    const { cartItems, getTotalPrice } = useContext(CartContext);
+    const { cartItems, getTotalPrice, setCartItems } = useContext(CartContext); // Added setCartItems
     const navigate = useNavigate();
     
     const [formData, setFormData] = useState({
@@ -18,48 +18,48 @@ export default function Shipping() {
         setFormData({...formData, phone: value});
     };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (cartItems.length === 0) {
-        alert("YOUR CART IS EMPTY");
-        return;
-    }
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        
+        if (cartItems.length === 0) {
+            alert("YOUR CART IS EMPTY");
+            return;
+        }
 
-    // Every key here matches the backend destructuring perfectly
-    const orderData = {
-        customer_name: formData.name, 
-        email: formData.email,
-        phone: formData.phone,
-        address: formData.address,
-        items: cartItems,
-        total: getTotalPrice(),
-        Accommodation: "None" 
+        const orderData = {
+            customer_name: formData.name, 
+            email: formData.email,
+            phone: formData.phone,
+            address: formData.address,
+            items: cartItems,
+            total: getTotalPrice(),
+            Accommodation: "None" 
+        };
+
+        try {
+            const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+
+            const result = await res.json();
+
+            if (res.ok) {
+                alert("ORDER PLACED SUCCESSFULLY!");
+                // FIX: Clear the global cart state and local storage
+                setCartItems([]); 
+                localStorage.removeItem('pak_tex_cart'); 
+                navigate('/'); 
+            } else {
+                alert(`FAILED: ${result.details || result.error || "COULD NOT PROCESS ORDER"}`);
+            }
+        } catch (err) {
+            console.error("Order Error:", err);
+            alert("CONNECTION ERROR: CHECK YOUR INTERNET OR RAILWAY LOGS");
+        }
     };
 
-    try {
-        // Updated URL to the standard endpoint
-        const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
-
-        const result = await res.json();
-
-        if (res.ok) {
-            alert("ORDER PLACED SUCCESSFULLY!");
-            localStorage.removeItem('pak_tex_cart'); 
-            navigate('/'); 
-        } else {
-            // This will now alert the SPECIFIC database error (e.g., "Column total_amount missing")
-            alert(`FAILED: ${result.details || result.error || "COULD NOT PROCESS ORDER"}`);
-        }
-    } catch (err) {
-        console.error("Order Error:", err);
-        alert("CONNECTION ERROR: CHECK YOUR INTERNET OR RAILWAY LOGS");
-    }
-};
     return (
         <div style={{ padding: '100px 50px', backgroundColor: '#000', color: '#fff', minHeight: '100vh' }}>
             <h2 style={{ letterSpacing: '5px', textAlign: 'center', textTransform: 'uppercase' }}>Shipping Details</h2>

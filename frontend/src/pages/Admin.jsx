@@ -9,7 +9,6 @@ export default function Admin() {
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
         
-        // If no token exists, send them to login immediately
         if (!token) {
             navigate('/login');
             return;
@@ -33,7 +32,7 @@ export default function Admin() {
         })
         .catch(err => {
             console.error("Admin Fetch Error:", err);
-            localStorage.removeItem('adminToken'); // Clear bad token
+            localStorage.removeItem('adminToken');
             navigate('/login');
         });
     }, [navigate]);
@@ -65,56 +64,43 @@ export default function Admin() {
                 <thead>
                     <tr>
                         <th>City Name</th>
-                        <th>Event / Venue</th>
+                        <th>Customer / Items</th>
                         <th>Address</th>
-                        <th style={{ width: '20px' }}></th> {/* Empty Space 4 */}
+                        <th style={{ width: '20px' }}></th> 
                         <th>Phone Number</th>
-                        <th style={{ width: '20px' }}></th> {/* Empty Space 6 */}
-                        <th>Website URL</th>
-                        <th>Accommodation</th>
+                        <th style={{ width: '20px' }}></th> 
+                        <th>Email / Website</th>
+                        <th>Total Paid</th>
                     </tr>
                 </thead>
                 <tbody>
                     {orders.length > 0 ? (
                         orders.map((order) => {
-                            // Backend sends items as a JSON string or Array depending on SQL version
-                            const items = Array.isArray(order.items) ? order.items : JSON.parse(order.items || '[]');
+                            // Safely handle items list from backend
+                            const items = Array.isArray(order.items) ? order.items : [];
                             
                             return (
                                 <tr key={order.id}>
-                                    {/* 1. City Name */}
                                     <td>PAKISTAN</td> 
 
-                                    {/* 2. Event / Venue (Customer & Order Details) */}
                                     <td>
                                         <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#fff' }}>
-                                            {order.customer_name.toUpperCase()}
+                                            {(order.customer_name || 'UNKNOWN').toUpperCase()}
                                         </div>
-                                        {items.map((item, i) => (
-                                            <div key={i} className="item-tag">
-                                                {item.qty}x {item.name} [{item.size} / {item.color}]
+                                        {items.length > 0 ? items.map((item, i) => (
+                                            <div key={i} className="item-tag" style={{ fontSize: '0.65rem', color: '#aaa' }}>
+                                                {item.quantity}x {item.hoodie_name || 'Hoodie'} [{item.size} / {item.color}]
                                             </div>
-                                        ))}
+                                        )) : <div style={{ color: '#444' }}>No items listed</div>}
                                     </td>
 
-                                    {/* 3. Address */}
                                     <td style={{ maxWidth: '250px', lineHeight: '1.4' }}>{order.address}</td>
-
-                                    {/* 4. Empty Space */}
                                     <td></td>
-
-                                    {/* 5. Phone Number (Stored without +) */}
                                     <td style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>{order.phone}</td>
-
-                                    {/* 6. Empty Space */}
                                     <td></td>
-
-                                    {/* 7. Website URL (Using Email here) */}
                                     <td style={{ color: '#888' }}>{order.email}</td>
-
-                                    {/* 8. Accommodation */}
-                                    <td style={{ fontSize: '0.7rem' }}>
-                                        {order.total ? `PAID: $${order.total}` : 'STANDARD'}
+                                    <td style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#00ff00' }}>
+                                        ${order.total || '0.00'}
                                     </td>
                                 </tr>
                             );
