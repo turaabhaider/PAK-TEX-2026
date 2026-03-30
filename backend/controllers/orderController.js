@@ -1,11 +1,10 @@
 const db = require('../config/db');
 
 exports.createOrder = async (req, res) => {
-    // We check for both 'customer_name' and 'name' to match the frontend state
-    const { customer_name, name, email, phone, address, total, items } = req.body;
-    const finalName = customer_name || name; 
+    // 1. Destructure the data coming from your Shipping.jsx
+    const { name, email, phone, address, total, items, Accommodation } = req.body;
     
-    // Safety check: if there is no database connection, we stop here
+    // Safety check for DB connection
     if (!db.getConnection) {
         return res.status(500).json({ error: "Database connection utility missing" });
     }
@@ -15,16 +14,16 @@ exports.createOrder = async (req, res) => {
     try {
         await connection.beginTransaction();
 
-        // 1. Insert into 'orders' table
-        // We use finalName to ensure we didn't get a null value
+        // 2. Insert into 'orders' table
+        // We ensure all columns (customer_name, email, phone, address, total, Accommodation) are included
         const [orderResult] = await connection.execute(
-            'INSERT INTO orders (customer_name, email, phone, address, total) VALUES (?, ?, ?, ?, ?)',
-            [finalName, email, phone, address, total]
+            'INSERT INTO orders (customer_name, email, phone, address, total, Accommodation) VALUES (?, ?, ?, ?, ?, ?)',
+            [name, email, phone, address, total, Accommodation || 'None']
         );
         
         const orderId = orderResult.insertId;
 
-        // 2. Insert each item into 'order_items' table
+        // 3. Insert each item into 'order_items' table
         if (items && Array.isArray(items)) {
             for (const item of items) {
                 await connection.execute(
@@ -45,13 +44,12 @@ exports.createOrder = async (req, res) => {
         }
 
         await connection.commit();
-        console.log(`✅ Order ${orderId} placed successfully for ${finalName}`);
         res.status(201).json({ success: true, orderId });
 
     } catch (error) {
         if (connection) await connection.rollback();
-        console.error("CRITICAL TRANSACTION ERROR:", error.message);
-        res.status(500).json({ error: "Order processing failed", details: error.message });
+        console.error("ORDER ERROR:", error.message);
+        res.status(500).json({ error: "Order failed", details: error.message });
     } finally {
         if (connection) connection.release();
     }

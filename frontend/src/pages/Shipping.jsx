@@ -26,15 +26,16 @@ export default function Shipping() {
             alert("YOUR CART IS EMPTY");
             return;
         }
-
-        const orderData = {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-            address: formData.address,
-            items: cartItems,
-            total: getTotalPrice()
-        };
+      const orderData = {
+       customer_name: formData.name, // Change 'name' to 'customer_name'
+       full_name: formData.name,     // Also mapping to full_name just in case
+       email: formData.email,
+       phone: formData.phone,
+       address: formData.address,
+       items: cartItems,
+        total: getTotalPrice(),
+       Accommodation: "None"         // Adding the 8th column we discussed
+       };
 
         try {
            const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/orders', {

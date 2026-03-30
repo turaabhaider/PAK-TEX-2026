@@ -11,7 +11,8 @@ export default function Login() {
             const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ password })
+                body: JSON.stringify({
+                    email: 'admin@paktex.com', password })
             });
 
             const data = await res.json();
