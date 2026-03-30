@@ -44,20 +44,20 @@ exports.createOrder = async (req, res) => {
         // 3. Insert items
         if (items && Array.isArray(items)) {
             for (const item of items) {
-                await connection.execute(
-                    `INSERT INTO order_items 
-                    (order_id, product_id, hoodie_name, size, color, quantity, price) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                    [
-                        orderId, 
-                        item.id || null, 
-                        item.name || 'Product', 
-                        item.size || 'N/A', 
-                        item.color || 'N/A', 
-                        item.quantity || 1, 
-                        item.price || 0
-                    ]
-                );
+               // Correctly matched: 6 columns, 6 question marks, 6 values
+        await connection.execute(
+      `INSERT INTO order_items 
+     (order_id, product_id, size, color, quantity, price) 
+       VALUES (?, ?, ?, ?, ?, ?)`, 
+      [
+        orderId, 
+        item.id || null, 
+        item.size || 'N/A', 
+        item.color || 'N/A', 
+        item.quantity || 1, 
+        item.price || 0
+     ]
+    );
             }
         }
 
