@@ -8,7 +8,7 @@ export default function Login() {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const res = await fetch('http://localhost:5000/api/admin/login', {
+            const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/admin/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ password })
@@ -25,7 +25,7 @@ export default function Login() {
             }
         } catch (err) {
             console.error("Login Error:", err);
-            alert("Server is down. Check if backend is running on port 5000");
+            alert("Server is down. Check if backend is running on Railway.");
         }
     };
 

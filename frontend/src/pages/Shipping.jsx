@@ -37,7 +37,7 @@ export default function Shipping() {
         };
 
         try {
-            const res = await fetch('http://localhost:5000/api/orders', {
+           const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/orders', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(orderData)
@@ -56,7 +56,7 @@ export default function Shipping() {
             }
         } catch (err) {
             console.error("Network/Order Error:", err);
-            alert("CONNECTION ERROR: IS THE SERVER RUNNING ON PORT 5000?");
+           alert("CONNECTION ERROR: IS THE RAILWAY SERVER RUNNING?");
         }
     };
 

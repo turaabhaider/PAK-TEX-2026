@@ -15,7 +15,7 @@ export default function Admin() {
             return;
         }
 
-        fetch('http://localhost:5000/api/admin/orders', {
+        fetch('https://pak-tex-2026-production-1907.up.railway.app/api/admin/orders', {
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'

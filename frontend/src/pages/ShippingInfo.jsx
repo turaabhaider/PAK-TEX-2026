@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 export default function ShippingInfo() {
     // 1. Get the Backend URL (Defaults to localhost if not set in Railway)
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+   const API_URL = import.meta.env.VITE_API_URL || 'https://pak-tex-2026-production-1907.up.railway.app';
 
     const [formData, setFormData] = useState({
         fullName: '',
