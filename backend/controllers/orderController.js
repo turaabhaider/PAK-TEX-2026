@@ -41,25 +41,26 @@ exports.createOrder = async (req, res) => {
         
         const orderId = orderResult.insertId;
 
-        // 3. Insert items
-        if (items && Array.isArray(items)) {
-            for (const item of items) {
-               // Correctly matched: 6 columns, 6 question marks, 6 values
+ // This part goes inside your exports.createOrder function
+if (items && Array.isArray(items)) {
+    for (const item of items) {
+        // We match the 6 columns from your screenshot: 
+        // order_id, product_id, quantity, price, size, color
         await connection.execute(
-      `INSERT INTO order_items 
-     (order_id, product_id, size, color, quantity, price) 
-       VALUES (?, ?, ?, ?, ?, ?)`, 
-      [
-        orderId, 
-        item.id || null, 
-        item.size || 'N/A', 
-        item.color || 'N/A', 
-        item.quantity || 1, 
-        item.price || 0
-     ]
-    );
-            }
-        }
+            `INSERT INTO order_items 
+            (order_id, product_id, quantity, price, size, color) 
+            VALUES (?, ?, ?, ?, ?, ?)`, 
+            [
+                orderId, 
+                item.id || null, 
+                item.quantity || 1, 
+                item.price || 0,
+                item.size || 'N/A', 
+                item.color || 'N/A'
+            ]
+        );
+    }
+}
 
         await connection.commit();
         res.status(201).json({ success: true, orderId });
