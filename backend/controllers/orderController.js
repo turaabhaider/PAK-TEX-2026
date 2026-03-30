@@ -1,29 +1,39 @@
 const db = require('../config/db');
 
 exports.createOrder = async (req, res) => {
-    const { customer_name, email, phone, address, total, items, Accommodation } = req.body;
-    
-    if (!db.getConnection) {
-        return res.status(500).json({ error: "Database connection utility missing" });
-    }
+    // 1. Destructure with fallbacks to prevent "NULL" errors
+    const { 
+        customer_name, 
+        name, 
+        email, 
+        phone, 
+        address, 
+        total, 
+        items, 
+        Accommodation 
+    } = req.body;
+
+    // Use whichever name field is available
+    const finalName = customer_name || name;
 
     const connection = await db.getConnection();
     
     try {
         await connection.beginTransaction();
 
-        // We fill both 'total' and 'total_amount' to match your DB structure
+        // 2. Insert into 'orders' table
+        // We fill EVERYTHING: customer_name, total, total_amount, and status
         const [orderResult] = await connection.execute(
             `INSERT INTO orders 
             (customer_name, email, phone, address, total, total_amount, Accommodation, status) 
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                customer_name, 
+                finalName, 
                 email, 
                 phone, 
                 address, 
-                total,         
-                total,         // Fills total_amount
+                total || 0,         
+                total || 0, // Ensure total_amount is filled
                 Accommodation || 'None', 
                 'Pending'
             ]
@@ -31,6 +41,7 @@ exports.createOrder = async (req, res) => {
         
         const orderId = orderResult.insertId;
 
+        // 3. Insert items
         if (items && Array.isArray(items)) {
             for (const item of items) {
                 await connection.execute(
@@ -40,7 +51,7 @@ exports.createOrder = async (req, res) => {
                     [
                         orderId, 
                         item.id || null, 
-                        item.name || 'Unknown Product', 
+                        item.name || 'Product', 
                         item.size || 'N/A', 
                         item.color || 'N/A', 
                         item.quantity || 1, 
@@ -55,7 +66,8 @@ exports.createOrder = async (req, res) => {
 
     } catch (error) {
         if (connection) await connection.rollback();
-        console.error("ORDER ERROR:", error.message);
+        console.error("DATABASE ERROR:", error.message);
+        // Send the exact error message back to the frontend to see what's wrong
         res.status(500).json({ error: "Order failed", details: error.message });
     } finally {
         if (connection) connection.release();

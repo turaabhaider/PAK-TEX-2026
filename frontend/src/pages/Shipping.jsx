@@ -18,49 +18,48 @@ export default function Shipping() {
         setFormData({...formData, phone: value});
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        // Validation: Don't place order if cart is empty
-        if (cartItems.length === 0) {
-            alert("YOUR CART IS EMPTY");
-            return;
-        }
-    // Inside Shipping.jsx -> handleSubmit function
-        const orderData = {
-          customer_name: formData.name, 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (cartItems.length === 0) {
+        alert("YOUR CART IS EMPTY");
+        return;
+    }
+
+    // Every key here matches the backend destructuring perfectly
+    const orderData = {
+        customer_name: formData.name, 
         email: formData.email,
         phone: formData.phone,
-        address: formData.address, // <--- THIS WAS MISSING
+        address: formData.address,
         items: cartItems,
         total: getTotalPrice(),
-         Accommodation: "None" 
-        };
-
-        try {
-           const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/orders', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(orderData)
-            });
-
-            const result = await res.json();
-
-            if (res.ok) {
-                alert("ORDER PLACED SUCCESSFULLY!");
-                localStorage.removeItem('pak_tex_cart'); 
-                // Using navigate is safer than window.location.href
-                navigate('/'); 
-            } else {
-                console.error("Server Error:", result);
-                alert(`FAILED: ${result.message || "COULD NOT PROCESS ORDER"}`);
-            }
-        } catch (err) {
-            console.error("Network/Order Error:", err);
-           alert("CONNECTION ERROR: IS THE RAILWAY SERVER RUNNING?");
-        }
+        Accommodation: "None" 
     };
 
+    try {
+        // Updated URL to the standard endpoint
+        const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(orderData)
+        });
+
+        const result = await res.json();
+
+        if (res.ok) {
+            alert("ORDER PLACED SUCCESSFULLY!");
+            localStorage.removeItem('pak_tex_cart'); 
+            navigate('/'); 
+        } else {
+            // This will now alert the SPECIFIC database error (e.g., "Column total_amount missing")
+            alert(`FAILED: ${result.details || result.error || "COULD NOT PROCESS ORDER"}`);
+        }
+    } catch (err) {
+        console.error("Order Error:", err);
+        alert("CONNECTION ERROR: CHECK YOUR INTERNET OR RAILWAY LOGS");
+    }
+};
     return (
         <div style={{ padding: '100px 50px', backgroundColor: '#000', color: '#fff', minHeight: '100vh' }}>
             <h2 style={{ letterSpacing: '5px', textAlign: 'center', textTransform: 'uppercase' }}>Shipping Details</h2>
