@@ -5,7 +5,6 @@ export default function AllHoodies() {
     const [products, setProducts] = useState([]);
     const { addToCart } = useContext(CartContext);
 
-    // Dynamic URL: Uses Railway variable if it exists, otherwise localhost for dev
    const API_URL = 'https://pak-tex-2026-production-1907.up.railway.app';
 
     useEffect(() => {
@@ -13,9 +12,14 @@ export default function AllHoodies() {
             try {
                 const res = await fetch(`${API_URL}/api/products`);
                 const data = await res.json();
-                setProducts(data);
+                if (Array.isArray(data)) {
+                    setProducts(data);
+                } else {
+                    setProducts([]);
+                }
             } catch (err) {
                 console.error("Error fetching products:", err);
+                setProducts([]);
             }
         };
         fetchProducts();
@@ -28,7 +32,7 @@ export default function AllHoodies() {
             </h2>
             
             {products.length === 0 ? (
-                <p style={{ textAlign: 'center', color: '#444', letterSpacing: '2px' }}>LOADING COLLECTION...</p>
+                <p style={{ textAlign: 'center', color: '#444', letterSpacing: '2px' }}>NO PRODUCTS FOUND</p>
             ) : (
                 <div className="product-grid" style={{ 
                     display: 'grid', 
