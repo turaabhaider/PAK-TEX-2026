@@ -1,10 +1,9 @@
 import { useState, useContext } from 'react';
 import { CartContext } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom';
 
 export default function Shipping() {
-    const { cartItems, getTotalPrice, setCartItems } = useContext(CartContext); // Added setCartItems
-    const navigate = useNavigate();
+    // Removed setCartItems to prevent the crash
+    const { cartItems, getTotalPrice } = useContext(CartContext); 
     
     const [formData, setFormData] = useState({
         name: '',
@@ -47,10 +46,9 @@ export default function Shipping() {
 
             if (res.ok) {
                 alert("ORDER PLACED SUCCESSFULLY!");
-                // FIX: Clear the global cart state and local storage
-                setCartItems([]); 
+                // Clear storage and hard redirect to cleanly reset the cart
                 localStorage.removeItem('pak_tex_cart'); 
-                navigate('/'); 
+                window.location.href = '/'; 
             } else {
                 alert(`FAILED: ${result.details || result.error || "COULD NOT PROCESS ORDER"}`);
             }

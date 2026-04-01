@@ -64,13 +64,13 @@ export default function Admin() {
                 <thead>
                     <tr>
                         <th>City Name</th>
-                        <th>Customer / Items</th>
+                        <th>Event or Venue Name</th>
                         <th>Address</th>
                         <th style={{ width: '20px' }}></th> 
                         <th>Phone Number</th>
                         <th style={{ width: '20px' }}></th> 
-                        <th>Email / Website</th>
-                        <th>Total Paid</th>
+                        <th>Website URL</th>
+                        <th>Accommodation</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -89,7 +89,7 @@ export default function Admin() {
                                         </div>
                                         {items.length > 0 ? items.map((item, i) => (
                                             <div key={i} className="item-tag" style={{ fontSize: '0.65rem', color: '#aaa' }}>
-                                                {item.quantity}x {item.hoodie_name || 'Hoodie'} [{item.size} / {item.color}]
+                                                {item.quantity}x {item.hoodie_name || item.name || 'Item'} [{item.size} / {item.color}]
                                             </div>
                                         )) : <div style={{ color: '#444' }}>No items listed</div>}
                                     </td>
@@ -100,7 +100,7 @@ export default function Admin() {
                                     <td></td>
                                     <td style={{ color: '#888' }}>{order.email}</td>
                                     <td style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#00ff00' }}>
-                                        ${order.total || '0.00'}
+                                        {order.Accommodation !== "None" && order.Accommodation ? order.Accommodation : (order.total ? `PAID: $${order.total}` : 'None')}
                                     </td>
                                 </tr>
                             );
