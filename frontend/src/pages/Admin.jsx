@@ -14,27 +14,31 @@ export default function Admin() {
             return;
         }
 
-        fetch('https://pak-tex-2026-production-1907.up.railway.app/api/admin/orders', {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
+        const fetchOrders = async () => {
+            try {
+                const res = await fetch('https://pak-tex-2026-production-1907.up.railway.app/api/admin/orders', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (res.status === 401 || res.status === 403) {
+                    throw new Error("Unauthorized");
+                }
+
+                const data = await res.json();
+                // Ensure data is always an array before setting state
+                setOrders(Array.isArray(data) ? data : (data.orders || []));
+                setLoading(false);
+            } catch (err) {
+                console.error("Admin Fetch Error:", err);
+                localStorage.removeItem('adminToken');
+                navigate('/login');
             }
-        })
-        .then(res => {
-            if (res.status === 401 || res.status === 403) {
-                throw new Error("Unauthorized");
-            }
-            return res.json();
-        })
-        .then(data => {
-            setOrders(data);
-            setLoading(false);
-        })
-        .catch(err => {
-            console.error("Admin Fetch Error:", err);
-            localStorage.removeItem('adminToken');
-            navigate('/login');
-        });
+        };
+
+        fetchOrders();
     }, [navigate]);
 
     const handleLogout = () => {
@@ -76,38 +80,39 @@ export default function Admin() {
                 <tbody>
                     {orders.length > 0 ? (
                         orders.map((order) => {
-                            // Safely handle items list from backend
                             const items = Array.isArray(order.items) ? order.items : [];
                             
                             return (
                                 <tr key={order.id}>
-                                    <td>PAKISTAN</td> 
+                                    <td style={{ fontSize: '0.75rem' }}>PAKISTAN</td> 
 
                                     <td>
-                                        <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#fff' }}>
-                                            {(order.customer_name || 'UNKNOWN').toUpperCase()}
+                                        <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#fff', fontSize: '0.8rem' }}>
+                                            {(order.customer_name || 'GUEST').toUpperCase()}
                                         </div>
                                         {items.length > 0 ? items.map((item, i) => (
-                                            <div key={i} className="item-tag" style={{ fontSize: '0.65rem', color: '#aaa' }}>
-                                                {item.quantity}x {item.hoodie_name || item.name || 'Item'} [{item.size} / {item.color}]
+                                            <div key={i} className="item-tag" style={{ fontSize: '0.6rem', color: '#aaa' }}>
+                                                {item.quantity}x {item.name || 'Hoodie'} [{item.size || 'N/A'} / {item.color || 'N/A'}]
                                             </div>
-                                        )) : <div style={{ color: '#444' }}>No items listed</div>}
+                                        )) : <div style={{ color: '#444', fontSize: '0.6rem' }}>No items details</div>}
                                     </td>
 
-                                    <td style={{ maxWidth: '250px', lineHeight: '1.4' }}>{order.address}</td>
+                                    <td style={{ maxWidth: '200px', lineHeight: '1.4', fontSize: '0.75rem' }}>{order.address}</td>
                                     <td></td>
-                                    <td style={{ fontFamily: 'monospace', letterSpacing: '1px' }}>{order.phone}</td>
+                                    <td style={{ fontFamily: 'monospace', letterSpacing: '1px', fontSize: '0.75rem' }}>{order.phone}</td>
                                     <td></td>
-                                    <td style={{ color: '#888' }}>{order.email}</td>
+                                    <td style={{ color: '#888', fontSize: '0.75rem' }}>{order.email}</td>
                                     <td style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#00ff00' }}>
-                                        {order.Accommodation !== "None" && order.Accommodation ? order.Accommodation : (order.total ? `PAID: $${order.total}` : 'None')}
+                                        {order.Accommodation && order.Accommodation !== "None" 
+                                            ? order.Accommodation 
+                                            : (order.total ? `PAID: $${order.total}` : 'PENDING')}
                                     </td>
                                 </tr>
                             );
                         })
                     ) : (
                         <tr>
-                            <td colSpan="8" style={{ textAlign: 'center', padding: '100px', color: '#444' }}>
+                            <td colSpan="8" style={{ textAlign: 'center', padding: '100px', color: '#444', letterSpacing: '2px' }}>
                                 NO ORDERS FOUND IN DATABASE
                             </td>
                         </tr>
