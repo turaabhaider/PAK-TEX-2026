@@ -1,26 +1,28 @@
 const db = require('../config/db');
 
 exports.createOrder = async (req, res) => {
-    // We destructure using both casing styles to ensure it never catches an 'undefined'
+    // We only get 1 'total' from the frontend
     const { 
         customer_name, 
         email, 
         phone, 
         address, 
-        total, 
+        total,          
         items, 
         Accommodation, 
-        accommodation // Added lowercase check
+        accommodation 
     } = req.body;
     
-    // Final value to insert (prioritizing whatever the frontend sent)
     const finalAccommodation = Accommodation || accommodation || 'None';
+    const finalTotal = total || 0; 
 
     let connection;
     try {
         connection = await db.getConnection();
         await connection.beginTransaction();
 
+        // FIX: Look at the [?] array below. 
+        // We put 'finalTotal' in the 5th AND 6th positions.
         const [orderResult] = await connection.execute(
             `INSERT INTO orders 
             (customer_name, email, phone, address, total, total_amount, Accommodation, status) 
@@ -30,8 +32,8 @@ exports.createOrder = async (req, res) => {
                 email || '', 
                 phone || '', 
                 address || '', 
-                total || 0,
-                total || 0, 
+                finalTotal,       // This fills the 'total' column
+                finalTotal,       // This fills the 'total_amount' column
                 finalAccommodation, 
                 'Pending'
             ]
@@ -41,7 +43,6 @@ exports.createOrder = async (req, res) => {
 
         if (items && Array.isArray(items)) {
             for (const item of items) {
-                // We use item.hoodie_name or item.name to ensure the item description is saved
                 await connection.execute(
                     `INSERT INTO order_items 
                     (order_id, product_id, quantity, price, size, color) 
@@ -63,8 +64,8 @@ exports.createOrder = async (req, res) => {
 
     } catch (error) {
         if (connection) await connection.rollback();
-        console.error("CHECKOUT CRASHED:", error.message);
-        res.status(500).json({ error: "DB_ERROR", details: error.message });
+        console.error("CHECKOUT ERROR:", error.message);
+        res.status(500).json({ error: "DATABASE_ERROR", details: error.message });
     } finally {
         if (connection) connection.release();
     }

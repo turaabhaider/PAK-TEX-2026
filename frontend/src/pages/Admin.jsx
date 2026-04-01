@@ -22,8 +22,9 @@ export default function Admin() {
                 if (!res.ok) throw new Error("Unauthorized");
 
                 const data = await res.json();
-                // Match the data structure from your backend
-                setOrders(Array.isArray(data) ? data : (data.orders || []));
+                // Ensure we handle both array or object response
+                const orderData = Array.isArray(data) ? data : (data.orders || []);
+                setOrders(orderData);
                 setLoading(false);
             } catch (err) {
                 console.error("Admin Fetch Error:", err);
@@ -40,8 +41,8 @@ export default function Admin() {
     };
 
     if (loading) return (
-        <div className="admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000' }}>
-            <h2 style={{ letterSpacing: '10px', color: '#fff' }}>AUTHENTICATING...</h2>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000', color: '#fff' }}>
+            <h2 style={{ letterSpacing: '10px' }}>AUTHENTICATING...</h2>
         </div>
     );
 
@@ -57,13 +58,13 @@ export default function Admin() {
 
             <table className="admin-table" style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
                 <thead>
-                    <tr style={{ borderBottom: '1px solid #333', textAlign: 'left', color: '#888' }}>
+                    <tr style={{ borderBottom: '1px solid #333', textAlign: 'left', color: '#888', fontSize: '0.7rem' }}>
                         <th>City Name</th>
                         <th>Customer & Items</th>
                         <th>Address</th>
-                        <th style={{ width: '20px' }}></th>
+                        <th style={{ width: '20px' }}></th> {/* 4th Empty */}
                         <th>Phone Number</th>
-                        <th style={{ width: '20px' }}></th>
+                        <th style={{ width: '20px' }}></th> {/* 6th Empty */}
                         <th>Email Address</th>
                         <th>Accommodation</th>
                     </tr>
@@ -77,23 +78,23 @@ export default function Admin() {
                         
                         return (
                             <tr key={order.id} style={{ borderBottom: '1px solid #111' }}>
-                                <td style={{ padding: '15px' }}>PAKISTAN</td> 
-                                <td>
-                                    <div style={{ fontWeight: 'bold', color: '#fff' }}>
-                                        {(order.customer_name || 'GUEST').toUpperCase()}
+                                <td style={{ padding: '15px', fontSize: '0.75rem' }}>PAKISTAN</td> 
+                                <td style={{ padding: '10px 0' }}>
+                                    <div style={{ fontWeight: 'bold', color: '#fff', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                                        {order.customer_name || 'GUEST'}
                                     </div>
                                     {items.map((item, i) => (
                                         <div key={i} style={{ fontSize: '0.6rem', color: '#777' }}>
-                                            {item.quantity}x {item.name || 'Item'} [{item.size} / {item.color}]
+                                            {item.quantity}x {item.name || 'Item'} [{item.size || 'N/A'} / {item.color || 'N/A'}]
                                         </div>
                                     ))}
                                 </td>
-                                <td>{order.address}</td>
+                                <td style={{ fontSize: '0.75rem' }}>{order.address}</td>
                                 <td></td>
-                                <td style={{ fontFamily: 'monospace' }}>{order.phone}</td>
+                                <td style={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>{order.phone}</td>
                                 <td></td>
-                                <td style={{ color: '#888' }}>{order.email}</td>
-                                <td style={{ color: '#00ff00', fontWeight: 'bold' }}>
+                                <td style={{ color: '#888', fontSize: '0.75rem' }}>{order.email}</td>
+                                <td style={{ color: '#00ff00', fontWeight: 'bold', fontSize: '0.8rem' }}>
                                     {order.Accommodation && order.Accommodation !== "None" 
                                         ? order.Accommodation 
                                         : `$${order.total || 0}`}
