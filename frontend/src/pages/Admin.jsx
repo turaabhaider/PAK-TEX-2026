@@ -22,6 +22,7 @@ export default function Admin() {
                 if (!res.ok) throw new Error("Unauthorized");
 
                 const data = await res.json();
+                // Match the data structure from your backend
                 setOrders(Array.isArray(data) ? data : (data.orders || []));
                 setLoading(false);
             } catch (err) {
@@ -39,73 +40,69 @@ export default function Admin() {
     };
 
     if (loading) return (
-        <div className="admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <div className="admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000' }}>
             <h2 style={{ letterSpacing: '10px', color: '#fff' }}>AUTHENTICATING...</h2>
         </div>
     );
 
     return (
-        <div className="admin-container">
-            <div className="admin-header">
+        <div className="admin-container" style={{ background: '#000', minHeight: '100vh', padding: '20px' }}>
+            <div className="admin-header" style={{ display: 'flex', justifyContent: 'space-between', color: '#fff', marginBottom: '30px' }}>
                 <div>
-                    <h1 style={{ letterSpacing: '10px', textTransform: 'uppercase', marginBottom: '10px' }}>Orders Log</h1>
-                    <p style={{ color: '#00ff00', fontSize: '0.7rem', letterSpacing: '2px' }}>● SYSTEM SECURE (ENCRYPTED)</p>
+                    <h1 style={{ letterSpacing: '10px', textTransform: 'uppercase' }}>Orders Log</h1>
+                    <p style={{ color: '#00ff00', fontSize: '0.7rem' }}>● SYSTEM SECURE (ENCRYPTED)</p>
                 </div>
-                <button onClick={handleLogout} className="hero-btn" style={{ padding: '10px 20px', fontSize: '0.7rem' }}>LOGOUT</button>
+                <button onClick={handleLogout} className="hero-btn">LOGOUT</button>
             </div>
 
-            <table className="admin-table">
+            <table className="admin-table" style={{ width: '100%', color: '#fff', borderCollapse: 'collapse' }}>
                 <thead>
-                    <tr>
+                    <tr style={{ borderBottom: '1px solid #333', textAlign: 'left', color: '#888' }}>
                         <th>City Name</th>
-                        <th>Customer Name & Items</th> {/* FIXED: Removed "Event or Venue" */}
+                        <th>Customer & Items</th>
                         <th>Address</th>
-                        <th style={{ width: '20px' }}></th> {/* Empty Space 4th Column */}
+                        <th style={{ width: '20px' }}></th>
                         <th>Phone Number</th>
-                        <th style={{ width: '20px' }}></th> {/* Empty Space 6th Column */}
-                        <th>Email Address</th> {/* FIXED: Changed from Website URL */}
+                        <th style={{ width: '20px' }}></th>
+                        <th>Email Address</th>
                         <th>Accommodation</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {orders.length > 0 ? (
-                        orders.map((order) => {
-                            let items = [];
-                            try {
-                                items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
-                            } catch (e) { items = []; }
-                            
-                            return (
-                                <tr key={order.id}>
-                                    <td style={{ fontSize: '0.75rem' }}>PAKISTAN</td> 
-                                    <td>
-                                        <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#fff', fontSize: '0.8rem' }}>
-                                            {(order.customer_name || 'GUEST').toUpperCase()}
+                    {orders.length > 0 ? orders.map((order) => {
+                        let items = [];
+                        try {
+                            items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+                        } catch (e) { items = []; }
+                        
+                        return (
+                            <tr key={order.id} style={{ borderBottom: '1px solid #111' }}>
+                                <td style={{ padding: '15px' }}>PAKISTAN</td> 
+                                <td>
+                                    <div style={{ fontWeight: 'bold', color: '#fff' }}>
+                                        {(order.customer_name || 'GUEST').toUpperCase()}
+                                    </div>
+                                    {items.map((item, i) => (
+                                        <div key={i} style={{ fontSize: '0.6rem', color: '#777' }}>
+                                            {item.quantity}x {item.name || 'Item'} [{item.size} / {item.color}]
                                         </div>
-                                        {items.length > 0 ? items.map((item, i) => (
-                                            <div key={i} className="item-tag" style={{ fontSize: '0.6rem', color: '#aaa' }}>
-                                                {item.quantity}x {item.hoodie_name || item.name || 'Item'} [{item.size || 'N/A'} / {item.color || 'N/A'}]
-                                            </div>
-                                        )) : <div style={{ color: '#444', fontSize: '0.6rem' }}>No item details</div>}
-                                    </td>
-                                    <td style={{ maxWidth: '200px', lineHeight: '1.4', fontSize: '0.75rem' }}>{order.address}</td>
-                                    <td></td>
-                                    <td style={{ fontFamily: 'monospace', letterSpacing: '1px', fontSize: '0.75rem' }}>{order.phone}</td>
-                                    <td></td>
-                                    <td style={{ color: '#888', fontSize: '0.75rem' }}>{order.email}</td>
-                                    <td style={{ fontSize: '0.8rem', fontWeight: 'bold', color: '#00ff00' }}>
-                                        {order.Accommodation && order.Accommodation !== "None" 
-                                            ? order.Accommodation 
-                                            : (order.total ? `PAID: $${order.total}` : 'PENDING')}
-                                    </td>
-                                </tr>
-                            );
-                        })
-                    ) : (
+                                    ))}
+                                </td>
+                                <td>{order.address}</td>
+                                <td></td>
+                                <td style={{ fontFamily: 'monospace' }}>{order.phone}</td>
+                                <td></td>
+                                <td style={{ color: '#888' }}>{order.email}</td>
+                                <td style={{ color: '#00ff00', fontWeight: 'bold' }}>
+                                    {order.Accommodation && order.Accommodation !== "None" 
+                                        ? order.Accommodation 
+                                        : `$${order.total || 0}`}
+                                </td>
+                            </tr>
+                        );
+                    }) : (
                         <tr>
-                            <td colSpan="8" style={{ textAlign: 'center', padding: '100px', color: '#444', letterSpacing: '2px' }}>
-                                NO ORDERS FOUND IN DATABASE
-                            </td>
+                            <td colSpan="8" style={{ textAlign: 'center', padding: '100px', color: '#444' }}>NO ORDERS FOUND</td>
                         </tr>
                     )}
                 </tbody>

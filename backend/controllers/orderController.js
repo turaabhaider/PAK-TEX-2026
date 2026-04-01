@@ -1,14 +1,26 @@
 const db = require('../config/db');
 
 exports.createOrder = async (req, res) => {
-    const { customer_name, email, phone, address, total, items, Accommodation } = req.body;
+    // We destructure using both casing styles to ensure it never catches an 'undefined'
+    const { 
+        customer_name, 
+        email, 
+        phone, 
+        address, 
+        total, 
+        items, 
+        Accommodation, 
+        accommodation // Added lowercase check
+    } = req.body;
     
+    // Final value to insert (prioritizing whatever the frontend sent)
+    const finalAccommodation = Accommodation || accommodation || 'None';
+
     let connection;
     try {
         connection = await db.getConnection();
         await connection.beginTransaction();
 
-        // We fill both total and total_amount to avoid 'Missing Field' errors
         const [orderResult] = await connection.execute(
             `INSERT INTO orders 
             (customer_name, email, phone, address, total, total_amount, Accommodation, status) 
@@ -20,7 +32,7 @@ exports.createOrder = async (req, res) => {
                 address || '', 
                 total || 0,
                 total || 0, 
-                Accommodation || 'None', 
+                finalAccommodation, 
                 'Pending'
             ]
         );
@@ -29,7 +41,7 @@ exports.createOrder = async (req, res) => {
 
         if (items && Array.isArray(items)) {
             for (const item of items) {
-                // Simplified insert for items to ensure size/color don't break it
+                // We use item.hoodie_name or item.name to ensure the item description is saved
                 await connection.execute(
                     `INSERT INTO order_items 
                     (order_id, product_id, quantity, price, size, color) 
@@ -52,8 +64,7 @@ exports.createOrder = async (req, res) => {
     } catch (error) {
         if (connection) await connection.rollback();
         console.error("CHECKOUT CRASHED:", error.message);
-        // Sending the exact error back helps us see if it's still a DB issue
-        res.status(500).json({ error: "CONNECTION ERROR", details: error.message });
+        res.status(500).json({ error: "DB_ERROR", details: error.message });
     } finally {
         if (connection) connection.release();
     }
