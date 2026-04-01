@@ -8,11 +8,7 @@ export default function Admin() {
 
     useEffect(() => {
         const token = localStorage.getItem('adminToken');
-        
-        if (!token) {
-            navigate('/login');
-            return;
-        }
+        if (!token) { navigate('/login'); return; }
 
         const fetchOrders = async () => {
             try {
@@ -23,12 +19,9 @@ export default function Admin() {
                     }
                 });
 
-                if (res.status === 401 || res.status === 403) {
-                    throw new Error("Unauthorized");
-                }
+                if (!res.ok) throw new Error("Unauthorized");
 
                 const data = await res.json();
-                // Ensure data is always an array before setting state
                 setOrders(Array.isArray(data) ? data : (data.orders || []));
                 setLoading(false);
             } catch (err) {
@@ -37,7 +30,6 @@ export default function Admin() {
                 navigate('/login');
             }
         };
-
         fetchOrders();
     }, [navigate]);
 
@@ -47,8 +39,8 @@ export default function Admin() {
     };
 
     if (loading) return (
-        <div className="admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <h2 style={{ letterSpacing: '10px' }}>AUTHENTICATING...</h2>
+        <div className="admin-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+            <h2 style={{ letterSpacing: '10px', color: '#fff' }}>AUTHENTICATING...</h2>
         </div>
     );
 
@@ -59,44 +51,43 @@ export default function Admin() {
                     <h1 style={{ letterSpacing: '10px', textTransform: 'uppercase', marginBottom: '10px' }}>Orders Log</h1>
                     <p style={{ color: '#00ff00', fontSize: '0.7rem', letterSpacing: '2px' }}>● SYSTEM SECURE (ENCRYPTED)</p>
                 </div>
-                <button onClick={handleLogout} className="hero-btn" style={{ padding: '10px 20px', fontSize: '0.7rem' }}>
-                    LOGOUT
-                </button>
+                <button onClick={handleLogout} className="hero-btn" style={{ padding: '10px 20px', fontSize: '0.7rem' }}>LOGOUT</button>
             </div>
 
             <table className="admin-table">
                 <thead>
                     <tr>
                         <th>City Name</th>
-                        <th>Event or Venue Name</th>
+                        <th>Customer Name & Items</th> {/* FIXED: Removed "Event or Venue" */}
                         <th>Address</th>
-                        <th style={{ width: '20px' }}></th> 
+                        <th style={{ width: '20px' }}></th> {/* Empty Space 4th Column */}
                         <th>Phone Number</th>
-                        <th style={{ width: '20px' }}></th> 
-                        <th>Website URL</th>
+                        <th style={{ width: '20px' }}></th> {/* Empty Space 6th Column */}
+                        <th>Email Address</th> {/* FIXED: Changed from Website URL */}
                         <th>Accommodation</th>
                     </tr>
                 </thead>
                 <tbody>
                     {orders.length > 0 ? (
                         orders.map((order) => {
-                            const items = Array.isArray(order.items) ? order.items : [];
+                            let items = [];
+                            try {
+                                items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+                            } catch (e) { items = []; }
                             
                             return (
                                 <tr key={order.id}>
                                     <td style={{ fontSize: '0.75rem' }}>PAKISTAN</td> 
-
                                     <td>
                                         <div style={{ fontWeight: 'bold', marginBottom: '10px', color: '#fff', fontSize: '0.8rem' }}>
                                             {(order.customer_name || 'GUEST').toUpperCase()}
                                         </div>
                                         {items.length > 0 ? items.map((item, i) => (
                                             <div key={i} className="item-tag" style={{ fontSize: '0.6rem', color: '#aaa' }}>
-                                                {item.quantity}x {item.name || 'Hoodie'} [{item.size || 'N/A'} / {item.color || 'N/A'}]
+                                                {item.quantity}x {item.hoodie_name || item.name || 'Item'} [{item.size || 'N/A'} / {item.color || 'N/A'}]
                                             </div>
-                                        )) : <div style={{ color: '#444', fontSize: '0.6rem' }}>No items details</div>}
+                                        )) : <div style={{ color: '#444', fontSize: '0.6rem' }}>No item details</div>}
                                     </td>
-
                                     <td style={{ maxWidth: '200px', lineHeight: '1.4', fontSize: '0.75rem' }}>{order.address}</td>
                                     <td></td>
                                     <td style={{ fontFamily: 'monospace', letterSpacing: '1px', fontSize: '0.75rem' }}>{order.phone}</td>
