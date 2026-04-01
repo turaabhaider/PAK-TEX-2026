@@ -49,18 +49,31 @@ app.get('/api/admin/orders', checkAuth, async (req, res) => {
     try {
         const [rows] = await db.query(`
             SELECT 
-                o.id, o.full_name, o.email, o.phone, o.address, o.total_amount, 
-                o.created_at, o.status,
-                JSON_ARRAYAGG(JSON_OBJECT('id', oi.id, 'product_id', oi.product_id, 'qty', oi.quantity, 'price', oi.price)) as items
+                o.id, 
+                o.customer_name, 
+                o.email, 
+                o.phone, 
+                o.address, 
+                o.total,
+                o.total_amount, 
+                o.Accommodation,
+                o.status,
+                o.created_at,
+                (SELECT JSON_ARRAYAGG(
+                    JSON_OBJECT(
+                        'name', product_id, 
+                        'quantity', quantity, 
+                        'size', size, 
+                        'color', color
+                    )
+                ) FROM order_items WHERE order_id = o.id) AS items
             FROM orders o
-            LEFT JOIN order_items oi ON o.id = oi.order_id
-            GROUP BY o.id
             ORDER BY o.created_at DESC
         `);
         res.json(rows);
     } catch (err) {
         console.error("Admin Error:", err.message);
-        res.status(500).json({ error: "Database Error" });
+        res.status(500).json({ error: "Database Error", details: err.message });
     }
 });
 
